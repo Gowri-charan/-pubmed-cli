@@ -10,19 +10,13 @@ PUBMED_FETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 def fetch_pubmed_papers(query, debug=False):
     """Fetch paper IDs from PubMed based on a query."""
-    params = {
-        "db": "pubmed",
-        "term": query,
-        "retmode": "json",
-        "retmax": 10  # Adjust as needed
-    }
+    params = {"db": "pubmed", "term": query, "retmode": "json", "retmax": 10}
     response = requests.get(PUBMED_API_URL, params=params)
     response.raise_for_status()
     paper_ids = response.json().get("esearchresult", {}).get("idlist", [])
 
     if debug:
         print(f"🔍 Debug: Fetched Paper IDs: {paper_ids}")
-
     return paper_ids
 
 def fetch_paper_details(paper_ids, debug=False):
@@ -30,28 +24,18 @@ def fetch_paper_details(paper_ids, debug=False):
     if not paper_ids:
         return {}
 
-    params = {
-        "db": "pubmed",
-        "id": ",".join(paper_ids),
-        "retmode": "json"
-    }
+    params = {"db": "pubmed", "id": ",".join(paper_ids), "retmode": "json"}
     response = requests.get(PUBMED_SUMMARY_URL, params=params)
     response.raise_for_status()
     data = response.json().get("result", {})
 
     if debug:
         print(f"🔍 Debug: Fetched Paper Details: {data}")
-
     return data
 
 def fetch_paper_authors(paper_id, debug=False):
     """Fetch detailed author information including email and affiliations."""
-    params = {
-        "db": "pubmed",
-        "id": paper_id,
-        "rettype": "medline",
-        "retmode": "text"
-    }
+    params = {"db": "pubmed", "id": paper_id, "rettype": "medline", "retmode": "text"}
     response = requests.get(PUBMED_FETCH_URL, params=params)
     response.raise_for_status()
     text_data = response.text
@@ -60,7 +44,6 @@ def fetch_paper_authors(paper_id, debug=False):
     affiliations = {}
     authors = []
 
-    # Extract author affiliations
     author_affiliation_pattern = re.findall(r"AU  - (.+?)\n", text_data)
     affiliation_pattern = re.findall(r"AD  - (.+?)\n", text_data)
 
@@ -68,7 +51,6 @@ def fetch_paper_authors(paper_id, debug=False):
         authors.append(author)
         affiliations[author] = affiliation_pattern[i] if i < len(affiliation_pattern) else "Unknown Affiliation"
 
-    # Extract corresponding author email
     email_match = re.search(r"Electronic address: (.+?)\n", text_data)
     if email_match:
         email = email_match.group(1).strip()
@@ -90,7 +72,6 @@ def filter_non_academic_authors(paper_data, debug=False):
         title = details.get("title", "N/A")
         pub_date = details.get("pubdate", "N/A")
 
-        # Fetch full author details
         authors, affiliations, corresponding_author_email = fetch_paper_authors(paper_id, debug)
 
         non_academic_authors = []
@@ -136,12 +117,10 @@ def main():
 
     args = parser.parse_args()
 
-    # Fetch paper data
     paper_ids = fetch_pubmed_papers(args.query, args.debug)
     paper_data = fetch_paper_details(paper_ids, args.debug)
     filtered_papers = filter_non_academic_authors(paper_data, args.debug)
 
-    # Save results only to CSV
     save_to_csv(filtered_papers, args.file)
 
 if __name__ == "__main__":

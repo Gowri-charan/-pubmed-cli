@@ -1,25 +1,15 @@
-[project]
+[tool.poetry]
 name = "pubmed-cli"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Gowri Charan",email = "gowricharan16@gmail.com"}
-]
+description = "A CLI tool to fetch and filter PubMed papers"
+authors = ["Gowri Charan <gowricharan16@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "requests (>=2.32.3,<3.0.0)",
-    "pandas (>=2.2.3,<3.0.0)",
-    "argparse (>=1.4.0,<2.0.0)"
-]
+packages = [{include = "pubmed_cli"}]  # ✅ Specify package location
 
-[tool.poetry]
-packages = [{include = "pubmed_cli", from = "src"}]
-
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"  # Ensure Python version matches your system
+requests = "^2.31.0"
+pandas = "^2.2"
 
 [tool.poetry.scripts]
-get-papers-list = "cli:main"
+get-papers-list = "pubmed_cli.cli:main"  # ✅ Update CLI entry point
